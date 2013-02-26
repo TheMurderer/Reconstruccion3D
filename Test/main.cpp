@@ -61,6 +61,7 @@ void surf(Mat& img1, vector<KeyPoint>& keypoints){
         #endif
 }
 
+//Realiza el Matching entre puntos
 void computeMatching(Mat& img1, Mat& img2,vector<KeyPoint>& keypoints1,vector<KeyPoint>& keypoints2, vector<DMatch>& matches ){
         // computing descriptors
         #if _SURF_
@@ -107,6 +108,7 @@ void computeMatching(Mat& img1, Mat& img2,vector<KeyPoint>& keypoints1,vector<Ke
          imshow( "Good Matches", img_matches );
 }
 
+//Función que imprime por consola los puntos característicos encontrados
 void imprimirKeipoints(vector<KeyPoint> puntos){
     for(unsigned int i = 0; i < puntos.size(); i++){
         cout << "("  << puntos[i].pt.x << " , " << puntos[i].pt.y << ")" << endl;
@@ -142,13 +144,13 @@ int main(int argc, char* argv[]) {
         computeMatching(img1, img2, keypoints1, keypoints2, matches);
 
 
-        //vector <Point2f> puntosImagen1, puntosImagen2;
+        vector <Point2f> puntosImagen1, puntosImagen2;
 
-        //for(int j=0; j<matches.size(); j++){
-        //        puntosImagen1.push_back(Point2f(keypoints1[matches[j].queryIdx].pt));
-        //        puntosImagen2.push_back(Point2f(keypoints2[matches[j].trainIdx].pt));
-        //}
-/*
+        for(int j=0; j<matches.size(); j++){
+                puntosImagen1.push_back(Point2f(keypoints1[matches[j].queryIdx].pt));
+                puntosImagen2.push_back(Point2f(keypoints2[matches[j].trainIdx].pt));
+        }
+
         // Calculamos la matriz fundamental por el algoritmo 8-puntos y RANSAC.
         Mat fundamentalMat = Mat(3,3,CV_32F);
         Mat F2 = findFundamentalMat(puntosImagen1, puntosImagen2, fundamentalMat, CV_FM_8POINT|CV_FM_RANSAC, 1.0, 0.99);
@@ -180,9 +182,10 @@ int main(int argc, char* argv[]) {
 
         cout << "Epipolo Izquierdo : " << epipoloIzq << endl;
         cout << "Epipolo Derecho : " << epipoloDer << endl;
-*/
-        //imshow("imagen1", img1);
-        //imshow("imagen2", img2);
+
+        imshow("imagen1", img1);
+        imshow("imagen2", img2);
+
         waitKey();
         //destroyWindow("imagen1");
         //destroyWindow("imagen2");
