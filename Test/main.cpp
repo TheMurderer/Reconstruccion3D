@@ -138,12 +138,6 @@ int main(int argc, char* argv[]) {
         //harris(img1,img1_gray,keypoints1);
         //harris(img2,img2_gray,keypoints2);
 
-        //Señalamos los puntos encontrados sobre la imangen
-
-        //Mat salidaImg1,salidaImg2;
-        //drawKeypoints(img1,keypoints1,salidaImg1);
-        //drawKeypoints(img2,keypoints2,salidaImg2);
-
         //Hacemos el matching de los puntos encontrados en las imagenes
         computeMatching(img1, img2, keypoints1, keypoints2, matches);
 
