@@ -2,6 +2,12 @@
 #include <vector>
 #include<opencv2/opencv.hpp>
 #include<opencv2/nonfree/features2d.hpp>
+
+#include <opencv/cxcore.h>
+#include <opencv/cvaux.h>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 #include <fstream>
 using namespace cv;
 using namespace std;
@@ -152,39 +158,61 @@ int main(int argc, char* argv[]) {
         }
 
         // Calculamos la matriz fundamental por el algoritmo 8-puntos y RANSAC.
-        Mat fundamentalMat = Mat(3,3,CV_32F);
+        Mat fundamentalMat = Mat(3,3,CV_8UC1);
         Mat F2 = findFundamentalMat(puntosImagen1, puntosImagen2, fundamentalMat, CV_FM_8POINT|CV_FM_RANSAC, 1.0, 0.99);
         cout << "Matriz Fundamental: " << endl << F2 << endl;
 
-        // Pintamos las líneas epipolares resultantes de la matriz fundamental.
-        vector<Vec3f> lineasImg1, lineasImg2;
-        computeCorrespondEpilines(Mat(puntosImagen1), 1, F2, lineasImg1);
-        for (vector<Vec3f>::const_iterator it= lineasImg1.begin(); it!=lineasImg1.end(); ++it) {
-           line(img1, Point2d(0, -(*it)[2]/(*it)[1]), Point2d(img1.cols, -((*it)[2]+(*it)[0]*img1.cols)/(*it)[1]), Scalar(255,255,255));
+//        // Pintamos las líneas epipolares resultantes de la matriz fundamental.
+//        vector<Vec3f> lineasImg1, lineasImg2;
+//        computeCorrespondEpilines(Mat(puntosImagen1), 1, F2, lineasImg1);
+//        for (vector<Vec3f>::const_iterator it= lineasImg1.begin(); it!=lineasImg1.end(); ++it) {
+//           line(img1, Point2d(0, -(*it)[2]/(*it)[1]), Point2d(img1.cols, -((*it)[2]+(*it)[0]*img1.cols)/(*it)[1]), Scalar(255,255,255));
 
-        }
+//        }
 
-        computeCorrespondEpilines(Mat(puntosImagen2), 2, F2, lineasImg2);
-        for (vector<cv::Vec3f>::const_iterator it= lineasImg2.begin(); it!=lineasImg2.end(); ++it) {
-           line(img2, Point2d(0, -(*it)[2]/(*it)[1]), Point2d(img2.cols, -((*it)[2]+(*it)[0]*img2.cols)/(*it)[1]), Scalar(255,255,255));
-        }
+//        computeCorrespondEpilines(Mat(puntosImagen2), 2, F2, lineasImg2);
+//        for (vector<cv::Vec3f>::const_iterator it= lineasImg2.begin(); it!=lineasImg2.end(); ++it) {
+//           line(img2, Point2d(0, -(*it)[2]/(*it)[1]), Point2d(img2.cols, -((*it)[2]+(*it)[0]*img2.cols)/(*it)[1]), Scalar(255,255,255));
+//        }
 
-        // A partir de la matriz fundamental, calculamos los epipolos.
-        Mat transpuesta;
-        Mat epipoloIzq;
-        Mat epipoloDer;
-        transpose(F2, transpuesta);
-        Mat simetrica = transpuesta * F2;
-        Mat simetrica2 = F2 * transpuesta;
+//        // A partir de la matriz fundamental, calculamos los epipolos.
+//        Mat transpuesta;
+//        Mat epipoloIzq;
+//        Mat epipoloDer;
+//        transpose(F2, transpuesta);
+//        Mat simetrica = transpuesta * F2;
+//        Mat simetrica2 = F2 * transpuesta;
 
-        eigen(simetrica, epipoloIzq);
-        eigen(simetrica2, epipoloDer);
+//        eigen(simetrica, epipoloIzq);
+//        eigen(simetrica2, epipoloDer);
 
-        cout << "Epipolo Izquierdo : " << epipoloIzq << endl;
-        cout << "Epipolo Derecho : " << epipoloDer << endl;
+        //Calculo de las matrices de disparidad H1, H2
+        Mat H1, H2;
+        stereoRectifyUncalibrated(puntosImagen1,puntosImagen2,F2,img2.size(),H1,H2);
 
-        imshow("imagen1", img1);
-        imshow("imagen2", img2);
+        // create the image in which we will save our disparities
+        Mat imgDisparity16S = Mat( img1.rows, img1.cols, CV_16S );
+        Mat imgDisparity8U = Mat( img1.rows, img1.cols, CV_8UC1 );
+
+        int ndisparities = 16*5;      // < Range of disparity >
+        int SADWindowSize = 5;
+
+        StereoBM sbm( StereoBM::BASIC_PRESET,ndisparities,SADWindowSize );
+
+        sbm( img1, img2, imgDisparity8U, CV_8UC1 );
+
+        double minVal; double maxVal;
+
+        minMaxLoc( imgDisparity8U, &minVal, &maxVal );
+
+        cout << "Min disp: " << minVal << " Max value: " << maxVal << endl;
+
+
+//        cout << "Epipolo Izquierdo : " << epipoloIzq << endl;
+//        cout << "Epipolo Derecho : " << epipoloDer << endl;
+
+//        imshow("imagen1", img1);
+//        imshow("imagen2", img2);
 
         waitKey();
         //destroyWindow("imagen1");
