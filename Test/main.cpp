@@ -8,14 +8,10 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-
-
 #include <pcl/common/common_headers.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <boost/thread/thread.hpp>
-
-
 
 #include <fstream>
 using namespace cv;
@@ -27,7 +23,7 @@ using namespace std;
 //Variables globales
 int thresh = 150;
 int max_thresh = 255;
-
+/*
 //Harris - detector de esquinas
 void harris(Mat src,Mat &src_gray, vector<KeyPoint>& keypoints){
     Mat dst, dst_norm, dst_norm_scaled;
@@ -75,7 +71,7 @@ void surf(Mat& img1, vector<KeyPoint>& keypoints){
         detector.detect(img1, keypoints);
         #endif
 }
-
+*/
 //Visualizador de nube de puntos
 boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizer (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud)
 {
@@ -88,7 +84,7 @@ boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizer (pcl::Poin
   viewer->initCameraParameters ();
   return (viewer);
 }
-
+/*
 //Realiza el Matching entre puntos
 void computeMatching(Mat& img1, Mat& img2,vector<KeyPoint>& keypoints1,vector<KeyPoint>& keypoints2, vector<DMatch>& matches ){
         // computing descriptors
@@ -143,7 +139,7 @@ void imprimirKeipoints(vector<KeyPoint> puntos){
     }
 }
 
-
+*/
 
 int main(int argc, char* argv[]) {
 
@@ -159,84 +155,85 @@ int main(int argc, char* argv[]) {
         cvtColor( img2, img2_gray, CV_BGR2GRAY );
 
 
-        // Obtenemos los puntos en correspondencias de forma automática usando SURF
-        vector<KeyPoint> keypoints1, keypoints2;
-        vector<DMatch> matches;
+//        // Obtenemos los puntos en correspondencias de forma automática usando SURF
+//        vector<KeyPoint> keypoints1, keypoints2;
+//        vector<DMatch> matches;
 
-        surf(img1, keypoints1);
-        surf(img2, keypoints2);
-        //harris(img1,img1_gray,keypoints1);
-        //harris(img2,img2_gray,keypoints2);
+//        surf(img1, keypoints1);
+//        surf(img2, keypoints2);
+//        //harris(img1,img1_gray,keypoints1);
+//        //harris(img2,img2_gray,keypoints2);
 
-        //Hacemos el matching de los puntos encontrados en las imagenes
-        computeMatching(img1, img2, keypoints1, keypoints2, matches);
+//        //Hacemos el matching de los puntos encontrados en las imagenes
+//        computeMatching(img1, img2, keypoints1, keypoints2, matches);
 
 
-        vector <Point2f> puntosImagen1, puntosImagen2;
+//        vector <Point2f> puntosImagen1, puntosImagen2;
 
-        for(int j=0; j<matches.size(); j++){
-                puntosImagen1.push_back(Point2f(keypoints1[matches[j].queryIdx].pt));
-                puntosImagen2.push_back(Point2f(keypoints2[matches[j].trainIdx].pt));
-        }
-
-        // Calculamos la matriz fundamental por el algoritmo 8-puntos y RANSAC.
-        Mat fundamentalMat = Mat(3,3,CV_32F);
-        Mat F2 = findFundamentalMat(puntosImagen1, puntosImagen2, fundamentalMat, CV_FM_8POINT|CV_FM_RANSAC, 1.0, 0.99);
-        cout << "Matriz Fundamental: " << endl << F2 << endl;
-
-//        // Pintamos las líneas epipolares resultantes de la matriz fundamental.
-//        vector<Vec3f> lineasImg1, lineasImg2;
-//        computeCorrespondEpilines(Mat(puntosImagen1), 1, F2, lineasImg1);
-//        for (vector<Vec3f>::const_iterator it= lineasImg1.begin(); it!=lineasImg1.end(); ++it) {
-//           line(img1, Point2d(0, -(*it)[2]/(*it)[1]), Point2d(img1.cols, -((*it)[2]+(*it)[0]*img1.cols)/(*it)[1]), Scalar(255,255,255));
-
+//        for(int j=0; j<matches.size(); j++){
+//                puntosImagen1.push_back(Point2f(keypoints1[matches[j].queryIdx].pt));
+//                puntosImagen2.push_back(Point2f(keypoints2[matches[j].trainIdx].pt));
 //        }
 
-//        computeCorrespondEpilines(Mat(puntosImagen2), 2, F2, lineasImg2);
-//        for (vector<cv::Vec3f>::const_iterator it= lineasImg2.begin(); it!=lineasImg2.end(); ++it) {
-//           line(img2, Point2d(0, -(*it)[2]/(*it)[1]), Point2d(img2.cols, -((*it)[2]+(*it)[0]*img2.cols)/(*it)[1]), Scalar(255,255,255));
-//        }
+//        // Calculamos la matriz fundamental por el algoritmo 8-puntos y RANSAC.
+//        Mat fundamentalMat = Mat(3,3,CV_32F);
+//        Mat F2 = findFundamentalMat(puntosImagen1, puntosImagen2, fundamentalMat, CV_FM_8POINT|CV_FM_RANSAC, 1.0, 0.99);
+//        cout << "Matriz Fundamental: " << endl << F2 << endl;
 
-//        // A partir de la matriz fundamental, calculamos los epipolos.
-//        Mat transpuesta;
-//        Mat epipoloIzq;
-//        Mat epipoloDer;
-//        transpose(F2, transpuesta);
-//        Mat simetrica = transpuesta * F2;
-//        Mat simetrica2 = F2 * transpuesta;
+////        // Pintamos las líneas epipolares resultantes de la matriz fundamental.
+////        vector<Vec3f> lineasImg1, lineasImg2;
+////        computeCorrespondEpilines(Mat(puntosImagen1), 1, F2, lineasImg1);
+////        for (vector<Vec3f>::const_iterator it= lineasImg1.begin(); it!=lineasImg1.end(); ++it) {
+////           line(img1, Point2d(0, -(*it)[2]/(*it)[1]), Point2d(img1.cols, -((*it)[2]+(*it)[0]*img1.cols)/(*it)[1]), Scalar(255,255,255));
 
-//        eigen(simetrica, epipoloIzq);
-//        eigen(simetrica2, epipoloDer);
+////        }
 
-        //Calculo de las matrices de disparidad H1, H2
-        Mat H1, H2;
-        stereoRectifyUncalibrated(puntosImagen1,puntosImagen2,F2,img2.size(),H1,H2);
+////        computeCorrespondEpilines(Mat(puntosImagen2), 2, F2, lineasImg2);
+////        for (vector<cv::Vec3f>::const_iterator it= lineasImg2.begin(); it!=lineasImg2.end(); ++it) {
+////           line(img2, Point2d(0, -(*it)[2]/(*it)[1]), Point2d(img2.cols, -((*it)[2]+(*it)[0]*img2.cols)/(*it)[1]), Scalar(255,255,255));
+////        }
 
-        // create the image in which we will save our disparities
-        Mat imgDisparity16S = Mat( img1.rows, img1.cols, CV_16S );
-        Mat imgDisparity8U = Mat( img1.rows, img1.cols, CV_8UC1 );
+////        // A partir de la matriz fundamental, calculamos los epipolos.
+////        Mat transpuesta;
+////        Mat epipoloIzq;
+////        Mat epipoloDer;
+////        transpose(F2, transpuesta);
+////        Mat simetrica = transpuesta * F2;
+////        Mat simetrica2 = F2 * transpuesta;
 
-        int ndisparities = 16*5;      // < Range of disparity >
-        int SADWindowSize = 5;
+////        eigen(simetrica, epipoloIzq);
+////        eigen(simetrica2, epipoloDer);
 
-        //Calculamos la disparidad a partir de imagenes en escala de grises
-        StereoBM sbm( StereoBM::BASIC_PRESET,ndisparities,SADWindowSize );
+//        //Calculo de las matrices de disparidad H1, H2
+//        Mat H1, H2;
+//        stereoRectifyUncalibrated(puntosImagen1,puntosImagen2,F2,img2.size(),H1,H2);
 
-        sbm( img1_gray,img2_gray , imgDisparity16S, CV_16SC1 );
+//        // create the image in which we will save our disparities
+//        Mat imgDisparity16S = Mat( img1.rows, img1.cols, CV_16S );
+//        Mat imgDisparity8U = Mat( img1.rows, img1.cols, CV_8UC1 );
 
-        double minVal; double maxVal;
+//        int ndisparities = 16*5;      // < Range of disparity >
+//        int SADWindowSize = 5;
 
-        minMaxLoc( imgDisparity16S, &minVal, &maxVal );
+//        //Calculamos la disparidad a partir de imagenes en escala de grises
+//        StereoBM sbm( StereoBM::BASIC_PRESET,ndisparities,SADWindowSize );
 
-        printf("Min disp: %f Max value: %f \n", minVal, maxVal);
+//        sbm( img1_gray,img2_gray , imgDisparity16S, CV_16SC1 );
 
-        // Display it as a CV_8UC1 image
-        imgDisparity16S.convertTo( imgDisparity8U, CV_8UC1, 255/(maxVal - minVal));
+//        double minVal; double maxVal;
 
-        namedWindow( "windowDisparity", CV_WINDOW_NORMAL );
-        imshow( "windowDisparity", imgDisparity8U );
+//        minMaxLoc( imgDisparity16S, &minVal, &maxVal );
 
-        //Calculamos la nube de puntos
+//        printf("Min disp: %f Max value: %f \n", minVal, maxVal);
+
+//        // Display it as a CV_8UC1 image
+//        imgDisparity16S.convertTo( imgDisparity8U, CV_8UC1, 255/(maxVal - minVal));
+
+//        namedWindow( "windowDisparity", CV_WINDOW_NORMAL );
+//        imshow( "windowDisparity", imgDisparity8U );
+
+//        waitKey();
+//        //Calculamos la nube de puntos
 
         //Cargamos la matriz Q
         //Load Matrix Q
@@ -261,6 +258,12 @@ int main(int argc, char* argv[]) {
 //            std::cout << "Q(" << x << "," << y << ") = " << Qy[x] << std::endl;
 //          }
 //        }
+
+        Mat imgDisparity8U = imread("imagenDisparidad.png", CV_LOAD_IMAGE_GRAYSCALE);
+
+        namedWindow("disparity-image",CV_WINDOW_NORMAL);
+        imshow("disparity-image", imgDisparity8U);
+        waitKey();
 
         Mat recons3D(imgDisparity8U.size(), CV_32FC3);
 
@@ -337,3 +340,75 @@ int main(int argc, char* argv[]) {
 
         return 1;
 }
+
+
+
+
+//#include <stdio.h>
+//#include <iostream>
+//#include "opencv2/calib3d/calib3d.hpp"
+//   #include "opencv2/core/core.hpp"
+//   #include "opencv2/highgui/highgui.hpp"
+
+//   using namespace cv;
+
+//   char *windowDisparity = "Disparity";
+
+//   void readme();
+
+//   /**
+//    * @function main
+//    * @brief Main function
+//    */
+//   int main( int argc, char** argv )
+//   {
+//     if( argc != 3 )
+//     { readme(); return -1; }
+
+//     //-- 1. Read the images
+//     Mat imgLeft = imread( argv[1], CV_LOAD_IMAGE_GRAYSCALE );
+//     Mat imgRight = imread( argv[2], CV_LOAD_IMAGE_GRAYSCALE );
+//     //-- And create the image in which we will save our disparities
+//     Mat imgDisparity16S = Mat( imgLeft.rows, imgLeft.cols, CV_16S );
+//     Mat imgDisparity8U = Mat( imgLeft.rows, imgLeft.cols, CV_8UC1 );
+
+//     if( !imgLeft.data || !imgRight.data )
+//     { std::cout<< " --(!) Error reading images " << std::endl; return -1; }
+
+//     //-- 2. Call the constructor for StereoBM
+//     int ndisparities = 16*5;   /**< Range of disparity */
+//     int SADWindowSize = 21; /**< Size of the block window. Must be odd */
+
+//     StereoBM sbm( StereoBM::BASIC_PRESET,
+//                                                                   ndisparities,
+//                   SADWindowSize );
+
+//     //-- 3. Calculate the disparity image
+//     sbm( imgLeft, imgRight, imgDisparity16S, CV_16S );
+
+//     //-- Check its extreme values
+//     double minVal; double maxVal;
+
+//     minMaxLoc( imgDisparity16S, &minVal, &maxVal );
+
+//     printf("Min disp: %f Max value: %f \n", minVal, maxVal);
+
+//     //-- 4. Display it as a CV_8UC1 image
+//     imgDisparity16S.convertTo( imgDisparity8U, CV_8UC1, 255/(maxVal - minVal));
+
+//     namedWindow( windowDisparity, CV_WINDOW_NORMAL );
+//     imshow( windowDisparity, imgDisparity8U );
+
+//     //-- 5. Save the image
+//     imwrite("SBM_sample.png", imgDisparity16S);
+
+//     waitKey(0);
+
+//     return 0;
+//   }
+
+//   /**
+//    * @function readme
+//    */
+//   void readme()
+//   { std::cout << " Usage: ./SBMSample <imgLeft> <imgRight>" << std::endl; }

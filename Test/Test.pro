@@ -35,7 +35,10 @@ LIBS += -L/usr/local/lib \
 -lopencv_contrib \
 -lopencv_legacy \
 -lopencv_nonfree \
--lopencv_flann
+-lopencv_flann \
+-lboost_thread \
+-lvtkCommon \
+-lvtkFiltering
 
 CONFIG += link_pkgconfig
 PKGCONFIG += pcl_registration-1.6
