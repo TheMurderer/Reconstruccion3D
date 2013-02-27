@@ -21,6 +21,7 @@ INCLUDEPATH += /usr/local/include/
 INCLUDEPATH += /usr/include/pcl-1.6/
 INCLUDEPATH += /usr/include/boost
 INCLUDEPATH += /usr/include/eigen3/Eigen
+INCLUDEPATH += /usr/include/vtk-5.8
 
 LIBS += -L/usr/local/lib \
 -lopencv_core \

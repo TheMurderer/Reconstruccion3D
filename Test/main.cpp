@@ -8,6 +8,15 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+
+
+#include <pcl/common/common_headers.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <boost/thread/thread.hpp>
+
+
+
 #include <fstream>
 using namespace cv;
 using namespace std;
@@ -65,6 +74,19 @@ void surf(Mat& img1, vector<KeyPoint>& keypoints){
         SiftFeatureDetector detector(puntos,3,0.06,10,sigma);
         detector.detect(img1, keypoints);
         #endif
+}
+
+//Visualizador de nube de puntos
+boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizer (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud)
+{
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  viewer->setBackgroundColor (0, 0, 0);
+  pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
+  viewer->addPointCloud<pcl::PointXYZRGB> (cloud, rgb, "reconstruction");
+  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "reconstruction");
+  viewer->addCoordinateSystem ( 1.0 );
+  viewer->initCameraParameters ();
+  return (viewer);
 }
 
 //Realiza el Matching entre puntos
@@ -158,7 +180,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Calculamos la matriz fundamental por el algoritmo 8-puntos y RANSAC.
-        Mat fundamentalMat = Mat(3,3,CV_8UC1);
+        Mat fundamentalMat = Mat(3,3,CV_32F);
         Mat F2 = findFundamentalMat(puntosImagen1, puntosImagen2, fundamentalMat, CV_FM_8POINT|CV_FM_RANSAC, 1.0, 0.99);
         cout << "Matriz Fundamental: " << endl << F2 << endl;
 
@@ -197,25 +219,121 @@ int main(int argc, char* argv[]) {
         int ndisparities = 16*5;      // < Range of disparity >
         int SADWindowSize = 5;
 
+        //Calculamos la disparidad a partir de imagenes en escala de grises
         StereoBM sbm( StereoBM::BASIC_PRESET,ndisparities,SADWindowSize );
 
-        sbm( img1, img2, imgDisparity8U, CV_8UC1 );
+        sbm( img1_gray,img2_gray , imgDisparity16S, CV_16SC1 );
 
         double minVal; double maxVal;
 
-        minMaxLoc( imgDisparity8U, &minVal, &maxVal );
+        minMaxLoc( imgDisparity16S, &minVal, &maxVal );
 
-        cout << "Min disp: " << minVal << " Max value: " << maxVal << endl;
+        printf("Min disp: %f Max value: %f \n", minVal, maxVal);
+
+        // Display it as a CV_8UC1 image
+        imgDisparity16S.convertTo( imgDisparity8U, CV_8UC1, 255/(maxVal - minVal));
+
+        namedWindow( "windowDisparity", CV_WINDOW_NORMAL );
+        imshow( "windowDisparity", imgDisparity8U );
+
+        //Calculamos la nube de puntos
+
+        //Cargamos la matriz Q
+        //Load Matrix Q
+        FileStorage fs("Q.xml", FileStorage::READ);
+        Mat Q;
+
+        fs["Q"] >> Q;
+
+        //If size of Q is not 4x4 exit
+        if (Q.cols != 4 || Q.rows != 4)
+        {
+          std::cerr << "ERROR: Could not read matrix Q (doesn't exist or size is not 4x4)" << std::endl;
+          return 1;
+        }
+
+        //Mostrar la matriz Q
+//        for (int y = 0; y < Q.rows; y++)
+//        {
+//          const double* Qy = Q.ptr<double>(y);
+//          for (int x = 0; x < Q.cols; x++)
+//          {
+//            std::cout << "Q(" << x << "," << y << ") = " << Qy[x] << std::endl;
+//          }
+//        }
+
+        Mat recons3D(imgDisparity8U.size(), CV_32FC3);
+
+        //Reproject image to 3D
+        cout << "Reprojecting image to 3D..." << endl;
+        reprojectImageTo3D( imgDisparity8U, recons3D, Q, false, CV_32F );
+
+        //Create point cloud and fill it
+        std::cout << "Creating Point Cloud..." <<std::endl;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+        double px, py, pz;
+        uchar pr, pg, pb;
+
+          for (int i = 0; i < img1.rows; i++)
+          {
+            uchar* rgb_ptr = img1.ptr<uchar>(i);
+//        #ifdef CUSTOM_REPROJECT
+//            uchar* disp_ptr = img_disparity.ptr<uchar>(i);
+//        #else
+            double* recons_ptr = recons3D.ptr<double>(i);
+        //#endif
+            for (int j = 0; j < img1.cols; j++)
+            {
+              //Get 3D coordinates
+//        #ifdef CUSTOM_REPROJECT
+//              uchar d = disp_ptr[j];
+//              if ( d == 0 ) continue; //Discard bad pixels
+//              double pw = -1.0 * static_cast<double>(d) * Q32 + Q33;
+//              px = static_cast<double>(j) + Q03;
+//              py = static_cast<double>(i) + Q13;
+//              pz = Q23;
+
+//              px = px/pw;
+//              py = py/pw;
+//              pz = pz/pw;
+
+//        #else
+              px = recons_ptr[3*j];
+              py = recons_ptr[3*j+1];
+              pz = recons_ptr[3*j+2];
+//        #endif
+
+              //Get RGB info
+              pb = rgb_ptr[3*j];
+              pg = rgb_ptr[3*j+1];
+              pr = rgb_ptr[3*j+2];
+
+              //Insert info into point cloud structure
+              pcl::PointXYZRGB point;
+              point.x = px;
+              point.y = py;
+              point.z = pz;
+              uint32_t rgb = (static_cast<uint32_t>(pr) << 16 |
+                      static_cast<uint32_t>(pg) << 8 | static_cast<uint32_t>(pb));
+              point.rgb = *reinterpret_cast<float*>(&rgb);
+              point_cloud_ptr->points.push_back (point);
+            }
+          }
+          point_cloud_ptr->width = (int) point_cloud_ptr->points.size();
+          point_cloud_ptr->height = 1;
+
+          //Create visualizer
+          boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
+          viewer = createVisualizer( point_cloud_ptr );
+
+          //Main loop
+          while ( !viewer->wasStopped())
+          {
+            viewer->spinOnce(100);
+            boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+          }
 
 
-//        cout << "Epipolo Izquierdo : " << epipoloIzq << endl;
-//        cout << "Epipolo Derecho : " << epipoloDer << endl;
-
-//        imshow("imagen1", img1);
-//        imshow("imagen2", img2);
-
-        waitKey();
-        //destroyWindow("imagen1");
-        //destroyWindow("imagen2");
         return 1;
 }
