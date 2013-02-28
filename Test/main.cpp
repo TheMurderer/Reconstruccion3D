@@ -141,18 +141,18 @@ void imprimirKeipoints(vector<KeyPoint> puntos){
 
 */
 
-int main(int argc, char* argv[]) {
+//int main(int argc, char* argv[]) {
 
-        /*if (argc != 3){
-            cerr << "Error: ./ejecutable [imagen1] [imagen2]" << endl;
-            return -1;
-        }*/
+//        /*if (argc != 3){
+//            cerr << "Error: ./ejecutable [imagen1] [imagen2]" << endl;
+//            return -1;
+//        }*/
 
-        Mat img1,img2,img1_gray,img2_gray;
-        img1 = imread("Imagenes/Dino/viff.002.ppm");
-        img2 = imread("Imagenes/Dino/viff.003.ppm");
-        cvtColor( img1, img1_gray, CV_BGR2GRAY );
-        cvtColor( img2, img2_gray, CV_BGR2GRAY );
+//        Mat img1,img2,img1_gray,img2_gray;
+//        img1 = imread("Imagenes/Dino/viff.002.ppm");
+//        img2 = imread("Imagenes/Dino/viff.003.ppm");
+//        cvtColor( img1, img1_gray, CV_BGR2GRAY );
+//        cvtColor( img2, img2_gray, CV_BGR2GRAY );
 
 
 //        // Obtenemos los puntos en correspondencias de forma automática usando SURF
@@ -235,180 +235,180 @@ int main(int argc, char* argv[]) {
 //        waitKey();
 //        //Calculamos la nube de puntos
 
-        //Cargamos la matriz Q
-        //Load Matrix Q
-        FileStorage fs("Q.xml", FileStorage::READ);
-        Mat Q;
+//        //Cargamos la matriz Q
+//        //Load Matrix Q
+//        FileStorage fs("Q.xml", FileStorage::READ);
+//        Mat Q;
 
-        fs["Q"] >> Q;
+//        fs["Q"] >> Q;
 
-        //If size of Q is not 4x4 exit
-        if (Q.cols != 4 || Q.rows != 4)
-        {
-          std::cerr << "ERROR: Could not read matrix Q (doesn't exist or size is not 4x4)" << std::endl;
-          return 1;
-        }
-
-        //Mostrar la matriz Q
-//        for (int y = 0; y < Q.rows; y++)
+//        //If size of Q is not 4x4 exit
+//        if (Q.cols != 4 || Q.rows != 4)
 //        {
-//          const double* Qy = Q.ptr<double>(y);
-//          for (int x = 0; x < Q.cols; x++)
-//          {
-//            std::cout << "Q(" << x << "," << y << ") = " << Qy[x] << std::endl;
-//          }
+//          std::cerr << "ERROR: Could not read matrix Q (doesn't exist or size is not 4x4)" << std::endl;
+//          return 1;
 //        }
 
-        Mat imgDisparity8U = imread("imagenDisparidad.png", CV_LOAD_IMAGE_GRAYSCALE);
+//        //Mostrar la matriz Q
+////        for (int y = 0; y < Q.rows; y++)
+////        {
+////          const double* Qy = Q.ptr<double>(y);
+////          for (int x = 0; x < Q.cols; x++)
+////          {
+////            std::cout << "Q(" << x << "," << y << ") = " << Qy[x] << std::endl;
+////          }
+////        }
 
-        namedWindow("disparity-image",CV_WINDOW_NORMAL);
-        imshow("disparity-image", imgDisparity8U);
-        waitKey();
+//        Mat imgDisparity8U = imread("imagenDisparidad.png", CV_LOAD_IMAGE_GRAYSCALE);
 
-        Mat recons3D(imgDisparity8U.size(), CV_32FC3);
+//        namedWindow("disparity-image",CV_WINDOW_NORMAL);
+//        imshow("disparity-image", imgDisparity8U);
+//        waitKey();
 
-        //Reproject image to 3D
-        cout << "Reprojecting image to 3D..." << endl;
-        reprojectImageTo3D( imgDisparity8U, recons3D, Q, false, CV_32F );
+//        Mat recons3D(imgDisparity8U.size(), CV_32FC3);
 
-        //Create point cloud and fill it
-        std::cout << "Creating Point Cloud..." <<std::endl;
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
+//        //Reproject image to 3D
+//        cout << "Reprojecting image to 3D..." << endl;
+//        reprojectImageTo3D( imgDisparity8U, recons3D, Q, false, CV_32F );
 
-        double px, py, pz;
-        uchar pr, pg, pb;
+//        //Create point cloud and fill it
+//        std::cout << "Creating Point Cloud..." <<std::endl;
+//        pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 
-          for (int i = 0; i < img1.rows; i++)
-          {
-            uchar* rgb_ptr = img1.ptr<uchar>(i);
-//        #ifdef CUSTOM_REPROJECT
-//            uchar* disp_ptr = img_disparity.ptr<uchar>(i);
-//        #else
-            double* recons_ptr = recons3D.ptr<double>(i);
-        //#endif
-            for (int j = 0; j < img1.cols; j++)
-            {
-              //Get 3D coordinates
-//        #ifdef CUSTOM_REPROJECT
-//              uchar d = disp_ptr[j];
-//              if ( d == 0 ) continue; //Discard bad pixels
-//              double pw = -1.0 * static_cast<double>(d) * Q32 + Q33;
-//              px = static_cast<double>(j) + Q03;
-//              py = static_cast<double>(i) + Q13;
-//              pz = Q23;
+//        double px, py, pz;
+//        uchar pr, pg, pb;
 
-//              px = px/pw;
-//              py = py/pw;
-//              pz = pz/pw;
+//          for (int i = 0; i < img1.rows; i++)
+//          {
+//            uchar* rgb_ptr = img1.ptr<uchar>(i);
+////        #ifdef CUSTOM_REPROJECT
+////            uchar* disp_ptr = img_disparity.ptr<uchar>(i);
+////        #else
+//            double* recons_ptr = recons3D.ptr<double>(i);
+//        //#endif
+//            for (int j = 0; j < img1.cols; j++)
+//            {
+//              //Get 3D coordinates
+////        #ifdef CUSTOM_REPROJECT
+////              uchar d = disp_ptr[j];
+////              if ( d == 0 ) continue; //Discard bad pixels
+////              double pw = -1.0 * static_cast<double>(d) * Q32 + Q33;
+////              px = static_cast<double>(j) + Q03;
+////              py = static_cast<double>(i) + Q13;
+////              pz = Q23;
 
-//        #else
-              px = recons_ptr[3*j];
-              py = recons_ptr[3*j+1];
-              pz = recons_ptr[3*j+2];
-//        #endif
+////              px = px/pw;
+////              py = py/pw;
+////              pz = pz/pw;
 
-              //Get RGB info
-              pb = rgb_ptr[3*j];
-              pg = rgb_ptr[3*j+1];
-              pr = rgb_ptr[3*j+2];
+////        #else
+//              px = recons_ptr[3*j];
+//              py = recons_ptr[3*j+1];
+//              pz = recons_ptr[3*j+2];
+////        #endif
 
-              //Insert info into point cloud structure
-              pcl::PointXYZRGB point;
-              point.x = px;
-              point.y = py;
-              point.z = pz;
-              uint32_t rgb = (static_cast<uint32_t>(pr) << 16 |
-                      static_cast<uint32_t>(pg) << 8 | static_cast<uint32_t>(pb));
-              point.rgb = *reinterpret_cast<float*>(&rgb);
-              point_cloud_ptr->points.push_back (point);
-            }
-          }
-          point_cloud_ptr->width = (int) point_cloud_ptr->points.size();
-          point_cloud_ptr->height = 1;
+//              //Get RGB info
+//              pb = rgb_ptr[3*j];
+//              pg = rgb_ptr[3*j+1];
+//              pr = rgb_ptr[3*j+2];
 
-          //Create visualizer
-          boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
-          viewer = createVisualizer( point_cloud_ptr );
+//              //Insert info into point cloud structure
+//              pcl::PointXYZRGB point;
+//              point.x = px;
+//              point.y = py;
+//              point.z = pz;
+//              uint32_t rgb = (static_cast<uint32_t>(pr) << 16 |
+//                      static_cast<uint32_t>(pg) << 8 | static_cast<uint32_t>(pb));
+//              point.rgb = *reinterpret_cast<float*>(&rgb);
+//              point_cloud_ptr->points.push_back (point);
+//            }
+//          }
+//          point_cloud_ptr->width = (int) point_cloud_ptr->points.size();
+//          point_cloud_ptr->height = 1;
 
-          //Main loop
-          while ( !viewer->wasStopped())
-          {
-            viewer->spinOnce(100);
-            boost::this_thread::sleep (boost::posix_time::microseconds (100000));
-          }
+//          //Create visualizer
+//          boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
+//          viewer = createVisualizer( point_cloud_ptr );
 
-
-        return 1;
-}
+//          //Main loop
+//          while ( !viewer->wasStopped())
+//          {
+//            viewer->spinOnce(100);
+//            boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+//          }
 
 
+//        return 1;
+//}
 
 
-//#include <stdio.h>
-//#include <iostream>
-//#include "opencv2/calib3d/calib3d.hpp"
-//   #include "opencv2/core/core.hpp"
-//   #include "opencv2/highgui/highgui.hpp"
 
-//   using namespace cv;
 
-//   char *windowDisparity = "Disparity";
+#include <stdio.h>
+#include <iostream>
+#include "opencv2/calib3d/calib3d.hpp"
+   #include "opencv2/core/core.hpp"
+   #include "opencv2/highgui/highgui.hpp"
 
-//   void readme();
+   using namespace cv;
 
-//   /**
-//    * @function main
-//    * @brief Main function
-//    */
-//   int main( int argc, char** argv )
-//   {
-//     if( argc != 3 )
-//     { readme(); return -1; }
+   char *windowDisparity = "Disparity";
 
-//     //-- 1. Read the images
-//     Mat imgLeft = imread( argv[1], CV_LOAD_IMAGE_GRAYSCALE );
-//     Mat imgRight = imread( argv[2], CV_LOAD_IMAGE_GRAYSCALE );
-//     //-- And create the image in which we will save our disparities
-//     Mat imgDisparity16S = Mat( imgLeft.rows, imgLeft.cols, CV_16S );
-//     Mat imgDisparity8U = Mat( imgLeft.rows, imgLeft.cols, CV_8UC1 );
+   void readme();
 
-//     if( !imgLeft.data || !imgRight.data )
-//     { std::cout<< " --(!) Error reading images " << std::endl; return -1; }
+   /**
+    * @function main
+    * @brief Main function
+    */
+   int main( int argc, char** argv )
+   {
+     if( argc != 3 )
+     { readme(); return -1; }
 
-//     //-- 2. Call the constructor for StereoBM
-//     int ndisparities = 16*5;   /**< Range of disparity */
-//     int SADWindowSize = 21; /**< Size of the block window. Must be odd */
+     //-- 1. Read the images
+     Mat imgLeft = imread( argv[1], CV_LOAD_IMAGE_GRAYSCALE );
+     Mat imgRight = imread( argv[2], CV_LOAD_IMAGE_GRAYSCALE );
+     //-- And create the image in which we will save our disparities
+     Mat imgDisparity16S = Mat( imgLeft.rows, imgLeft.cols, CV_16S );
+     Mat imgDisparity8U = Mat( imgLeft.rows, imgLeft.cols, CV_8UC1 );
 
-//     StereoBM sbm( StereoBM::BASIC_PRESET,
-//                                                                   ndisparities,
-//                   SADWindowSize );
+     if( !imgLeft.data || !imgRight.data )
+     { std::cout<< " --(!) Error reading images " << std::endl; return -1; }
 
-//     //-- 3. Calculate the disparity image
-//     sbm( imgLeft, imgRight, imgDisparity16S, CV_16S );
+     //-- 2. Call the constructor for StereoBM
+     int ndisparities = 16*5;   /**< Range of disparity */
+     int SADWindowSize = 21; /**< Size of the block window. Must be odd */
 
-//     //-- Check its extreme values
-//     double minVal; double maxVal;
+     StereoBM sbm( StereoBM::BASIC_PRESET,
+                                                                   ndisparities,
+                   SADWindowSize );
 
-//     minMaxLoc( imgDisparity16S, &minVal, &maxVal );
+     //-- 3. Calculate the disparity image
+     sbm( imgLeft, imgRight, imgDisparity16S, CV_16S );
 
-//     printf("Min disp: %f Max value: %f \n", minVal, maxVal);
+     //-- Check its extreme values
+     double minVal; double maxVal;
 
-//     //-- 4. Display it as a CV_8UC1 image
-//     imgDisparity16S.convertTo( imgDisparity8U, CV_8UC1, 255/(maxVal - minVal));
+     minMaxLoc( imgDisparity16S, &minVal, &maxVal );
 
-//     namedWindow( windowDisparity, CV_WINDOW_NORMAL );
-//     imshow( windowDisparity, imgDisparity8U );
+     printf("Min disp: %f Max value: %f \n", minVal, maxVal);
 
-//     //-- 5. Save the image
-//     imwrite("SBM_sample.png", imgDisparity16S);
+     //-- 4. Display it as a CV_8UC1 image
+     imgDisparity16S.convertTo( imgDisparity8U, CV_8UC1, 255/(maxVal - minVal));
 
-//     waitKey(0);
+     namedWindow( windowDisparity, CV_WINDOW_NORMAL );
+     imshow( windowDisparity, imgDisparity8U );
 
-//     return 0;
-//   }
+     //-- 5. Save the image
+     imwrite("SBM_sample.png", imgDisparity16S);
 
-//   /**
-//    * @function readme
-//    */
-//   void readme()
-//   { std::cout << " Usage: ./SBMSample <imgLeft> <imgRight>" << std::endl; }
+     waitKey(0);
+
+     return 0;
+   }
+
+   /**
+    * @function readme
+    */
+   void readme()
+   { std::cout << " Usage: ./SBMSample <imgLeft> <imgRight>" << std::endl; }
